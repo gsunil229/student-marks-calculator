@@ -7,6 +7,7 @@ A simple web application built using HTML, CSS, and JavaScript.
 - Automatic grade calculation
 - Two-page navigation (Home & Result)
 - Data persistence using localStorage
+- Edit/Delete Studnet features added
 
 ## Technologies Used
 - HTML5
@@ -19,4 +20,4 @@ A simple web application built using HTML, CSS, and JavaScript.
 
 ## Future Improvements
 - Backend with Node.js & MySQL
-- Edit/Delete student records
+
