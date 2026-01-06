@@ -145,5 +145,59 @@ function goHome() {
   window.location.href = "index.html";
 }
 
+// ----Search by student name feature-------
+function searchStudent() {
+  let searchValue = document
+    .getElementById("searchInput")
+    .value
+    .toLowerCase();
+
+  if (searchValue === "") {
+    displayStudents();
+    return;
+  }
+
+  let filteredStudents = students.filter(student =>
+    student.name.toLowerCase().includes(searchValue)
+  );
+
+  displayFilteredStudents(filteredStudents);
+}
+
+
+function displayFilteredStudents(filteredStudents) {
+  const tbody = document.querySelector("#studentTable tbody");
+  tbody.innerHTML = "";
+
+  if (filteredStudents.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5">No matching students found</td></tr>`;
+    return;
+  }
+
+  filteredStudents.forEach((s) => {
+    const index = students.indexOf(s);
+
+    tbody.innerHTML += `
+      <tr>
+        <td>${s.name}</td>
+        <td>${s.marks}</td>
+        <td>
+          <span class="badge grade-${s.getGrade()}">${s.getGrade()}</span>
+        </td>
+        <td>
+          <span class="badge ${s.getStatus() === "Pass" ? "pass" : "fail"}">
+            ${s.getStatus()}
+          </span>
+        </td>
+        <td>
+          <button class="action-btn edit" onclick="editStudent(${index})">Edit</button>
+          <button class="action-btn delete" onclick="deleteStudent(${index})">Delete</button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+
 displayStudents();
 
