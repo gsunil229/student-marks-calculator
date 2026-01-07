@@ -17,6 +17,12 @@ class Student {
 
 }
 
+// Pagination concept
+let currentPage = 1;
+const rowsPerPage = 5;
+let filteredList = null; // used for search + pagination
+
+
 // Get stored students OR empty array
 let storedStudents = JSON.parse(localStorage.getItem("students")) || [];
 
@@ -73,32 +79,67 @@ function displayStudents() {
   const tbody = document.querySelector("#studentTable tbody");
   tbody.innerHTML = "";
 
-  if (students.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5">No students added</td></tr>`;
+  const data = filteredList || students;
+
+  if (data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5">No students found</td></tr>`;
+    document.getElementById("pageInfo").innerText = "";
     return;
   }
 
-  students.forEach((s, i) => {
+  const start = (currentPage - 1) * rowsPerPage;
+  const end = start + rowsPerPage;
+  const pageData = data.slice(start, end);
+
+  pageData.forEach((s) => {
+    const index = students.indexOf(s);
+
     tbody.innerHTML += `
       <tr>
         <td>${s.name}</td>
         <td>${s.marks}</td>
-        <td>
-          <span class="badge grade-${s.getGrade()}">${s.getGrade()}</span>
-        </td>
+        <td><span class="badge grade-${s.getGrade()}">${s.getGrade()}</span></td>
         <td>
           <span class="badge ${s.getStatus() === "Pass" ? "pass" : "fail"}">
             ${s.getStatus()}
           </span>
         </td>
         <td>
-          <button class="action-btn edit" onclick="editStudent(${i})">Edit</button>
-          <button class="action-btn delete" onclick="deleteStudent(${i})">Delete</button>
+          <button class="action-btn edit" onclick="editStudent(${index})">Edit</button>
+          <button class="action-btn delete" onclick="deleteStudent(${index})">Delete</button>
         </td>
       </tr>
     `;
   });
+
+  updatePageInfo(data.length);
 }
+
+function nextPage() {
+  const data = filteredList || students;
+  if (currentPage * rowsPerPage < data.length) {
+    currentPage++;
+    displayStudents();
+  }
+}
+
+function prevPage() {
+  if (currentPage > 1) {
+    currentPage--;
+    displayStudents();
+  }
+}
+
+function updatePageInfo(totalItems) {
+  const totalPages = Math.ceil(totalItems / rowsPerPage);
+
+  document.getElementById("pageInfo").innerText =
+    `Page ${currentPage} of ${totalPages}`;
+
+  document.getElementById("prevBtn").disabled = currentPage === 1;
+  document.getElementById("nextBtn").disabled = currentPage === totalPages;
+}
+
 
 // ---------- DELETE ----------
 function deleteStudent(index) {
@@ -152,17 +193,21 @@ function searchStudent() {
     .value
     .toLowerCase();
 
+  currentPage = 1;
+
   if (searchValue === "") {
+    filteredList = null;
     displayStudents();
     return;
   }
 
-  let filteredStudents = students.filter(student =>
+  filteredList = students.filter(student =>
     student.name.toLowerCase().includes(searchValue)
   );
 
-  displayFilteredStudents(filteredStudents);
+  displayStudents();
 }
+
 
 
 function displayFilteredStudents(filteredStudents) {
