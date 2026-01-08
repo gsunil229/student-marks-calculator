@@ -246,3 +246,20 @@ function displayFilteredStudents(filteredStudents) {
 
 displayStudents();
 
+//------- theme change logic----------
+function toggleTheme() {
+  const toggle = document.getElementById("themeToggle");
+  document.body.classList.toggle("dark", toggle.checked);
+  localStorage.setItem("theme", toggle.checked ? "dark" : "light");
+}
+
+// Load saved theme
+(function () {
+  const savedTheme = localStorage.getItem("theme");
+  const toggle = document.getElementById("themeToggle");
+
+  if (savedTheme === "dark") {
+    document.body.classList.add("dark");
+    toggle.checked = true;
+  }
+})();
