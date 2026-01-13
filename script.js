@@ -263,3 +263,52 @@ function toggleTheme() {
     toggle.checked = true;
   }
 })();
+
+
+// -----print pdf logic-------------
+function printResults() {
+  const dataToPrint = filteredList || students;
+
+  if (dataToPrint.length === 0) {
+    alert("No students to print");
+    return;
+  }
+
+  let tableHTML = `
+    <table style="width:100%; border-collapse: collapse;">
+      <thead>
+        <tr>
+          <th style="border:1px solid #000; padding:8px;">Name</th>
+          <th style="border:1px solid #000; padding:8px;">Marks</th>
+          <th style="border:1px solid #000; padding:8px;">Grade</th>
+          <th style="border:1px solid #000; padding:8px;">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  dataToPrint.forEach(s => {
+    tableHTML += `
+      <tr>
+        <td style="border:1px solid #000; padding:8px;">${s.name}</td>
+        <td style="border:1px solid #000; padding:8px;">${s.marks}</td>
+        <td style="border:1px solid #000; padding:8px;">${s.getGrade()}</td>
+        <td style="border:1px solid #000; padding:8px;">${s.getStatus()}</td>
+      </tr>
+    `;
+  });
+
+  tableHTML += `</tbody></table>`;
+
+  const originalContent = document.body.innerHTML;
+
+  document.body.innerHTML = `
+    <h2 style="text-align:center;">Student Results</h2>
+    ${tableHTML}
+  `;
+
+  window.print();
+  document.body.innerHTML = originalContent;
+  location.reload();
+}
+
