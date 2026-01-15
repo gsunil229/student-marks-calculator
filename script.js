@@ -96,7 +96,10 @@ function displayStudents() {
 
     tbody.innerHTML += `
       <tr>
-        <td>${s.name}</td>
+        <td>
+            ${s.name}
+            ${isTopper(s) ? `<span class="topper">⭐ Topper</span>` : ""}
+        </td>
         <td>${s.marks}</td>
         <td><span class="badge grade-${s.getGrade()}">${s.getGrade()}</span></td>
         <td>
@@ -312,3 +315,8 @@ function printResults() {
   location.reload();
 }
 
+function isTopper(student) {
+  const list = filteredList || students;
+  const highest = Math.max(...list.map(s => s.marks));
+  return student.marks === highest;
+}
