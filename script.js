@@ -56,12 +56,12 @@ function addStudent() {
   let marks = parseInt(document.getElementById("marks").value);
 
   if (name === "" || isNaN(marks)) {
-    alert("Please enter valid data");
+    showToast("Please enter valid data", "error");
     return;
   }
 
   if (marks < 0 || marks > 100) {
-    alert("Marks must be between 0 and 100");
+    showToast("Marks must be between 0 and 100", "error");
     return;
   }
 
@@ -71,7 +71,7 @@ function addStudent() {
   document.getElementById("name").value = "";
   document.getElementById("marks").value = "";
 
-  alert("Student added successfully!");
+  showToast("Student added successfully", "success");
 }
 
 // ---------- DISPLAY TABLE ----------
@@ -148,6 +148,7 @@ function updatePageInfo(totalItems) {
 function deleteStudent(index) {
   if (confirm("Are you sure you want to delete this student?")) {
     students.splice(index, 1);
+    showToast("Student deleted", "success");
     saveToStorage();
     displayStudents();
   }
@@ -163,12 +164,14 @@ function editStudent(index) {
   newMarks = parseInt(newMarks);
 
   if (newName === "" || isNaN(newMarks)) {
-    alert("Invalid input");
+    //alert("Invalid input");
+    showToast("Invalid input", "success");
     return;
   }
 
   if (newMarks < 0 || newMarks > 100) {
-    alert("Marks must be between 0 and 100");
+    //alert("Marks must be between 0 and 100");
+    showToast("Marks must be between 0 and 100", "success");
     return;
   }
 
@@ -177,6 +180,7 @@ function editStudent(index) {
 
   saveToStorage();
   displayStudents();
+  showToast("Student updated", "success");
 }
 
 
@@ -273,7 +277,8 @@ function printResults() {
   const dataToPrint = filteredList || students;
 
   if (dataToPrint.length === 0) {
-    alert("No students to print");
+    //alert("No students to print");
+    showToast("No students to print", "error")
     return;
   }
 
@@ -319,4 +324,17 @@ function isTopper(student) {
   const list = filteredList || students;
   const highest = Math.max(...list.map(s => s.marks));
   return student.marks === highest;
+}
+
+// --------- Toast Notifications ---------------
+function showToast(message, type = "info") {
+  const toast = document.getElementById("toast");
+  if (!toast) return;
+
+  toast.innerText = message;
+  toast.className = `toast show ${type}`;
+
+  setTimeout(() => {
+    toast.className = "toast";
+  }, 3000);
 }
