@@ -215,6 +215,33 @@ function searchStudent() {
   displayStudents();
 }
 
+// --------Sorting logic-----------
+function sortStudents() {
+  const sortValue = document.getElementById("sortSelect").value;
+
+  // Use filtered list if search is active
+  let data = filteredList || students;
+
+  if (sortValue === "name-asc") {
+    data.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  if (sortValue === "name-desc") {
+    data.sort((a, b) => b.name.localeCompare(a.name));
+  }
+
+  if (sortValue === "marks-desc") {
+    data.sort((a, b) => b.marks - a.marks);
+  }
+
+  if (sortValue === "marks-asc") {
+    data.sort((a, b) => a.marks - b.marks);
+  }
+
+  currentPage = 1;
+  displayStudents();
+}
+
 
 
 function displayFilteredStudents(filteredStudents) {
