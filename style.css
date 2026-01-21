@@ -244,3 +244,15 @@ input:checked + .slider::before {
 .toast.success { background: #16a34a; }
 .toast.error { background: #dc2626; }
 .toast.info { background: #2563eb; }
+
+.sort-controls {
+  margin: 10px 0;
+  text-align: right;
+}
+
+.sort-controls select {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}

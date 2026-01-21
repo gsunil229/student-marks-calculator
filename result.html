@@ -25,6 +25,16 @@
     <button onclick="printResults()">🖨 Print / Save as PDF</button>
 
 
+    <div class="sort-controls">
+      <select id="sortSelect" onchange="sortStudents()">
+      <option value="">Sort By</option>
+      <option value="name-asc">Name (A–Z)</option>
+      <option value="name-desc">Name (Z–A)</option>
+      <option value="marks-desc">Marks (High → Low)</option>
+      <option value="marks-asc">Marks (Low → High)</option>
+     </select>
+    </div>
+
 
   <table id="studentTable">
   <thead>
