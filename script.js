@@ -1,10 +1,11 @@
+// ================== STUDENT CLASS ==================
 class Student {
   constructor(name, marks) {
     this.name = name;
     this.marks = marks;
   }
 
-   getGrade() {
+  getGrade() {
     if (this.marks >= 80) return "A";
     if (this.marks >= 60) return "B";
     if (this.marks >= 40) return "C";
@@ -14,48 +15,28 @@ class Student {
   getStatus() {
     return this.marks >= 40 ? "Pass" : "Fail";
   }
-
 }
 
-// Pagination concept
+// ================== GLOBAL VARIABLES ==================
 let currentPage = 1;
 const rowsPerPage = 5;
-let filteredList = null; // used for search + pagination
+let filteredList = null;
 
+// Load students from storage
+let students = (JSON.parse(localStorage.getItem("students")) || [])
+  .map(s => new Student(s.name, s.marks));
 
-// Get stored students OR empty array
-let storedStudents = JSON.parse(localStorage.getItem("students")) || [];
-
-// Convert plain objects → Student objects
-let students = storedStudents.map(
-  s => new Student(s.name, s.marks)
-);
-
-
-// ---------- SAVE ----------
+// ================== STORAGE ==================
 function saveToStorage() {
-  localStorage.setItem(
-    "students",
-    JSON.stringify(students)
-  );
+  localStorage.setItem("students", JSON.stringify(students));
 }
-// function saveToStorage() {
-//   localStorage.setItem(
-//     "students",
-//     JSON.stringify(students.map(s => ({
-//       name: s.name,
-//       marks: s.marks
-//     })))
-//   );
-// }
 
-
-// ---------- ADD STUDENT ----------
+// ================== ADD STUDENT ==================
 function addStudent() {
-  let name = document.getElementById("name").value;
-  let marks = parseInt(document.getElementById("marks").value);
+  const name = document.getElementById("name").value.trim();
+  const marks = parseInt(document.getElementById("marks").value);
 
-  if (name === "" || isNaN(marks)) {
+  if (!name || isNaN(marks)) {
     showToast("Please enter valid data", "error");
     return;
   }
@@ -74,31 +55,31 @@ function addStudent() {
   showToast("Student added successfully", "success");
 }
 
-// ---------- DISPLAY TABLE ----------
+// ================== DISPLAY STUDENTS ==================
 function displayStudents() {
   const tbody = document.querySelector("#studentTable tbody");
-  tbody.innerHTML = "";
+  if (!tbody) return;
 
+  tbody.innerHTML = "";
   const data = filteredList || students;
 
   if (data.length === 0) {
     tbody.innerHTML = `<tr><td colspan="5">No students found</td></tr>`;
     document.getElementById("pageInfo").innerText = "";
+    updateStatistics();
     return;
   }
 
   const start = (currentPage - 1) * rowsPerPage;
-  const end = start + rowsPerPage;
-  const pageData = data.slice(start, end);
+  const pageData = data.slice(start, start + rowsPerPage);
 
-  pageData.forEach((s) => {
+  pageData.forEach(s => {
     const index = students.indexOf(s);
-
     tbody.innerHTML += `
       <tr>
         <td>
-            ${s.name}
-            ${isTopper(s) ? `<span class="topper">⭐ Topper</span>` : ""}
+          ${s.name}
+          ${isTopper(s) ? `<span class="topper">⭐ Topper</span>` : ""}
         </td>
         <td>${s.marks}</td>
         <td><span class="badge grade-${s.getGrade()}">${s.getGrade()}</span></td>
@@ -116,8 +97,10 @@ function displayStudents() {
   });
 
   updatePageInfo(data.length);
+  updateStatistics();
 }
 
+// ================== PAGINATION ==================
 function nextPage() {
   const data = filteredList || students;
   if (currentPage * rowsPerPage < data.length) {
@@ -135,233 +118,129 @@ function prevPage() {
 
 function updatePageInfo(totalItems) {
   const totalPages = Math.ceil(totalItems / rowsPerPage);
-
   document.getElementById("pageInfo").innerText =
     `Page ${currentPage} of ${totalPages}`;
-
   document.getElementById("prevBtn").disabled = currentPage === 1;
   document.getElementById("nextBtn").disabled = currentPage === totalPages;
 }
 
-
-// ---------- DELETE ----------
+// ================== DELETE ==================
 function deleteStudent(index) {
-  if (confirm("Are you sure you want to delete this student?")) {
+  if (confirm("Are you sure?")) {
     students.splice(index, 1);
-    showToast("Student deleted", "success");
     saveToStorage();
+    showToast("Student deleted", "success");
     displayStudents();
   }
 }
 
-// ---------- EDIT ----------
+// ================== EDIT ==================
 function editStudent(index) {
-  let newName = prompt("Enter new name:", students[index].name);
-  let newMarks = prompt("Enter new marks:", students[index].marks);
+  let newName = prompt("Enter name:", students[index].name);
+  let newMarks = parseInt(prompt("Enter marks:", students[index].marks));
 
-  if (newName === null || newMarks === null) return;
-
-  newMarks = parseInt(newMarks);
-
-  if (newName === "" || isNaN(newMarks)) {
-    //alert("Invalid input");
-    showToast("Invalid input", "success");
-    return;
-  }
-
-  if (newMarks < 0 || newMarks > 100) {
-    //alert("Marks must be between 0 and 100");
-    showToast("Marks must be between 0 and 100", "success");
+  if (!newName || isNaN(newMarks) || newMarks < 0 || newMarks > 100) {
+    showToast("Invalid input", "error");
     return;
   }
 
   students[index].name = newName;
   students[index].marks = newMarks;
-
   saveToStorage();
-  displayStudents();
   showToast("Student updated", "success");
+  displayStudents();
 }
 
-
-// ---------- NAVIGATION ----------
-function goToResult() {
-  window.location.href = "result.html";
-}
-
-function goHome() {
-  window.location.href = "index.html";
-}
-
-// ----Search by student name feature-------
+// ================== SEARCH ==================
 function searchStudent() {
-  let searchValue = document
-    .getElementById("searchInput")
-    .value
-    .toLowerCase();
-
+  const value = document.getElementById("searchInput").value.toLowerCase();
   currentPage = 1;
 
-  if (searchValue === "") {
-    filteredList = null;
-    displayStudents();
-    return;
-  }
-
-  filteredList = students.filter(student =>
-    student.name.toLowerCase().includes(searchValue)
-  );
+  filteredList = value
+    ? students.filter(s => s.name.toLowerCase().includes(value))
+    : null;
 
   displayStudents();
 }
 
-// --------Sorting logic-----------
+// ================== SORT ==================
 function sortStudents() {
-  const sortValue = document.getElementById("sortSelect").value;
-
-  // Use filtered list if search is active
+  const value = document.getElementById("sortSelect").value;
   let data = filteredList || students;
 
-  if (sortValue === "name-asc") {
-    data.sort((a, b) => a.name.localeCompare(b.name));
-  }
-
-  if (sortValue === "name-desc") {
-    data.sort((a, b) => b.name.localeCompare(a.name));
-  }
-
-  if (sortValue === "marks-desc") {
-    data.sort((a, b) => b.marks - a.marks);
-  }
-
-  if (sortValue === "marks-asc") {
-    data.sort((a, b) => a.marks - b.marks);
-  }
+  if (value === "name-asc") data.sort((a,b)=>a.name.localeCompare(b.name));
+  if (value === "name-desc") data.sort((a,b)=>b.name.localeCompare(a.name));
+  if (value === "marks-asc") data.sort((a,b)=>a.marks-b.marks);
+  if (value === "marks-desc") data.sort((a,b)=>b.marks-a.marks);
 
   currentPage = 1;
   displayStudents();
 }
 
+// ================== STATISTICS ==================
+function updateStatistics() {
+  const data = filteredList || students;
 
-
-function displayFilteredStudents(filteredStudents) {
-  const tbody = document.querySelector("#studentTable tbody");
-  tbody.innerHTML = "";
-
-  if (filteredStudents.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5">No matching students found</td></tr>`;
-    return;
-  }
-
-  filteredStudents.forEach((s) => {
-    const index = students.indexOf(s);
-
-    tbody.innerHTML += `
-      <tr>
-        <td>${s.name}</td>
-        <td>${s.marks}</td>
-        <td>
-          <span class="badge grade-${s.getGrade()}">${s.getGrade()}</span>
-        </td>
-        <td>
-          <span class="badge ${s.getStatus() === "Pass" ? "pass" : "fail"}">
-            ${s.getStatus()}
-          </span>
-        </td>
-        <td>
-          <button class="action-btn edit" onclick="editStudent(${index})">Edit</button>
-          <button class="action-btn delete" onclick="deleteStudent(${index})">Delete</button>
-        </td>
-      </tr>
-    `;
-  });
+  document.getElementById("totalStudents").innerText = data.length || 0;
+  document.getElementById("avgMarks").innerText =
+    data.length ? (data.reduce((s,x)=>s+x.marks,0)/data.length).toFixed(2) : 0;
+  document.getElementById("topMarks").innerText =
+    data.length ? Math.max(...data.map(s=>s.marks)) : 0;
+  document.getElementById("passPercent").innerText =
+    data.length ? ((data.filter(s=>s.marks>=40).length/data.length)*100).toFixed(1)+"%" : "0%";
 }
 
+// ================== TOPPER ==================
+function isTopper(student) {
+  const data = filteredList || students;
+  return student.marks === Math.max(...data.map(s=>s.marks));
+}
 
-displayStudents();
-
-//------- theme change logic----------
+// ================== THEME ==================
 function toggleTheme() {
-  const toggle = document.getElementById("themeToggle");
-  document.body.classList.toggle("dark", toggle.checked);
-  localStorage.setItem("theme", toggle.checked ? "dark" : "light");
+  document.body.classList.toggle("dark");
+  localStorage.setItem("theme",
+    document.body.classList.contains("dark") ? "dark" : "light");
 }
 
-// Load saved theme
-(function () {
-  const savedTheme = localStorage.getItem("theme");
-  const toggle = document.getElementById("themeToggle");
-
-  if (savedTheme === "dark") {
+// Load theme
+(() => {
+  if (localStorage.getItem("theme") === "dark") {
     document.body.classList.add("dark");
-    toggle.checked = true;
+    document.getElementById("themeToggle").checked = true;
   }
 })();
 
-
-// -----print pdf logic-------------
+// ================== PRINT ==================
 function printResults() {
-  const dataToPrint = filteredList || students;
+  const data = filteredList || students;
+  if (!data.length) return showToast("No data to print", "error");
 
-  if (dataToPrint.length === 0) {
-    //alert("No students to print");
-    showToast("No students to print", "error")
-    return;
-  }
-
-  let tableHTML = `
-    <table style="width:100%; border-collapse: collapse;">
-      <thead>
-        <tr>
-          <th style="border:1px solid #000; padding:8px;">Name</th>
-          <th style="border:1px solid #000; padding:8px;">Marks</th>
-          <th style="border:1px solid #000; padding:8px;">Grade</th>
-          <th style="border:1px solid #000; padding:8px;">Status</th>
-        </tr>
-      </thead>
-      <tbody>
-  `;
-
-  dataToPrint.forEach(s => {
-    tableHTML += `
-      <tr>
-        <td style="border:1px solid #000; padding:8px;">${s.name}</td>
-        <td style="border:1px solid #000; padding:8px;">${s.marks}</td>
-        <td style="border:1px solid #000; padding:8px;">${s.getGrade()}</td>
-        <td style="border:1px solid #000; padding:8px;">${s.getStatus()}</td>
-      </tr>
-    `;
-  });
-
-  tableHTML += `</tbody></table>`;
-
-  const originalContent = document.body.innerHTML;
+  let rows = data.map(s =>
+    `<tr><td>${s.name}</td><td>${s.marks}</td><td>${s.getGrade()}</td><td>${s.getStatus()}</td></tr>`
+  ).join("");
 
   document.body.innerHTML = `
-    <h2 style="text-align:center;">Student Results</h2>
-    ${tableHTML}
-  `;
-
+    <h2>Student Results</h2>
+    <table border="1" width="100%">
+      <tr><th>Name</th><th>Marks</th><th>Grade</th><th>Status</th></tr>
+      ${rows}
+    </table>`;
   window.print();
-  document.body.innerHTML = originalContent;
   location.reload();
 }
 
-function isTopper(student) {
-  const list = filteredList || students;
-  const highest = Math.max(...list.map(s => s.marks));
-  return student.marks === highest;
-}
-
-// --------- Toast Notifications ---------------
-function showToast(message, type = "info") {
+// ================== TOAST ==================
+function showToast(msg, type="info") {
   const toast = document.getElementById("toast");
-  if (!toast) return;
-
-  toast.innerText = message;
+  toast.innerText = msg;
   toast.className = `toast show ${type}`;
-
-  setTimeout(() => {
-    toast.className = "toast";
-  }, 3000);
+  setTimeout(()=>toast.className="toast",3000);
 }
+
+// ================== NAVIGATION ==================
+function goHome(){ window.location.href="index.html"; }
+function goToResult(){ window.location.href="result.html"; }
+
+// ================== INIT ==================
+displayStudents();
